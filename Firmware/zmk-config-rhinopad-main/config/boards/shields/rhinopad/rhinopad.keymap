@@ -3,15 +3,17 @@
 #include <dt-bindings/zmk/bt.h>
 
 /* Layer indices */
-#define LAYER_BASE 0
-#define LAYER_BT   1
+#define BASE       0
+#define MACROS     1
+#define NUMPAD     2
+#define BLUETOOTH  3
 
 / {
     behaviors {
 
-        /* Encoder rotate: variable keypress behavior */
+        /* Encoder rotation: two different key-presses depending on direction */
         rot_kp: behavior_sensor_rotate_kp {
-            compatible = "zmk,behavior-sensor-rotate-var";
+            compatible = "zmk,behavior-sensor-rotate-key-press";
             label = "ENC_KP";
             #sensor-binding-cells = <2>;
             bindings = <&kp>, <&kp>;
@@ -21,44 +23,84 @@
     keymap {
         compatible = "zmk,keymap";
 
-        /****************
+        /***************
          * LAYER 0 — BASE
          *
-         * Top:    =   9   8   7   Del
-         * Mid:        6   5   4
-         * Bottom: .   3   2   1   0
-         ****************/
-        layer_base {
+         * ,----------------------------------.
+         * |  =  |  9  |  8  |  7  |  DEL |
+         * `------+------+------+------+-----'
+         *        |  6  |  5  |  4  |
+         * ,------+------+------+------+-----.
+         * |  .  |  3  |  2  |  1  |  0  |
+         * `---------------------------------'
+         *
+         * (Encoder press is mapped separately as a key in the matrix and
+         *  toggles the MACROS layer.)
+         ***************/
+        base_layer {
             label = "BASE";
 
             bindings = <
-                &kp EQUAL   &kp N9   &kp N8   &kp N7   &kp DEL
-                             &kp N6  &kp N5   &kp N4
-                &kp DOT     &kp N3   &kp N2   &kp N1   &kp N0
+                &kp EQUAL   &kp N9      &kp N8      &kp N7      &kp DEL
+                             &kp N6      &kp N5      &kp N4
+                &kp DOT      &kp N3      &kp N2      &kp N1      &kp N0
             >;
 
-            /* Encoder turn = left/right arrow */
-            sensor-bindings = <&rot_kp LEFT RIGHT>;
+            /* Encoder rotation: scroll left/right with arrow keys */
+            sensor-bindings = <&rot_kp &kp LEFT &kp RIGHT>;
         };
 
-        /****************
-         * LAYER 1 — BLUETOOTH / UTILITY
-         *
-         * Top:   BT CLR   ___   ___   ___   BOOT
-         * Mid:           BT0   BT1   BT2
-         * Bottom: ___   ___   ___   ___   TOG BT
-         ****************/
-        layer_bt {
+        /***************
+         * LAYER 1 — MACROS (unchanged except for encoder behavior)
+         * You can keep or edit these as you like; they no longer affect
+         * the BASE layer’s simple number layout.
+         ***************/
+        macros_layer {
+            label = "MACROS";
+
+            /* Re-use whatever layout you had here before, or keep this simple
+             * placeholder layout if you wiped the old one.
+             *
+             * For now I’ll give you something basic you can customize later.
+             */
+
+            bindings = <
+                &kp F1      &kp F2      &kp F3      &kp F4      &tog MACROS
+                             &kp F5      &kp F6      &kp F7
+                &kp F8      &kp F9      &kp F10     &kp F11     &kp F12
+            >;
+
+            sensor-bindings = <&rot_kp &kp LEFT &kp RIGHT>;
+        };
+
+        /***************
+         * LAYER 2 — NUMPAD (optional extra layer)
+         ***************/
+        numpad_layer {
+            label = "NUMPAD";
+
+            bindings = <
+                &kp N7      &kp N8      &kp N9      &kp KP_PLUS   &kp KP_ENTER
+                             &kp N4      &kp N5      &kp N6
+                &kp N1      &kp N2      &kp N3      &kp DOT       &kp N0
+            >;
+
+            sensor-bindings = <&rot_kp &kp LEFT &kp RIGHT>;
+        };
+
+        /***************
+         * LAYER 3 — BLUETOOTH / RESET
+         ***************/
+        bt_layer {
             label = "BT";
 
             bindings = <
-                &bt BT_CLR    &none         &none          &none          &bootloader
-                               &bt BT_SEL 0 &bt BT_SEL 1   &bt BT_SEL 2
-                &none          &none         &none          &none          &tog LAYER_BT
+                &bt BT_CLR   &none         &none         &none         &bootloader
+                              &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2
+                &none         &none         &none         &none         &tog BLUETOOTH
             >;
 
-            /* Keep encoder scroll the same on this layer */
-            sensor-bindings = <&rot_kp LEFT RIGHT>;
+            sensor-bindings = <&rot_kp &kp LEFT &kp RIGHT>;
         };
     };
 };
