@@ -3,18 +3,18 @@
 #include <dt-bindings/zmk/bt.h>
 
 /* Layer indices */
-#define BASE       0
-#define BLUETOOTH  1
+#define LAYER_BASE 0
+#define LAYER_BT   1
 
 / {
     behaviors {
 
-        /* Encoder behavior: rotate = keypress left/right */
+        /* Encoder rotate: variable keypress behavior */
         rot_kp: behavior_sensor_rotate_kp {
             compatible = "zmk,behavior-sensor-rotate-var";
             label = "ENC_KP";
             #sensor-binding-cells = <2>;
-            bindings = <&kp LEFT>, <&kp RIGHT>;
+            bindings = <&kp>, <&kp>;
         };
     };
 
@@ -25,49 +25,40 @@
          * LAYER 0 — BASE
          *
          * Top:    =   9   8   7   Del
-         * Middle:     6   5   4
+         * Mid:        6   5   4
          * Bottom: .   3   2   1   0
          ****************/
-        default_layer {
+        layer_base {
             label = "BASE";
 
             bindings = <
-                &kp EQUAL   &kp N9      &kp N8      &kp N7      &kp DEL
-                            &kp N6      &kp N5      &kp N4
-                &kp DOT     &kp N3      &kp N2      &kp N1      &kp N0
+                &kp EQUAL   &kp N9   &kp N8   &kp N7   &kp DEL
+                             &kp N6  &kp N5   &kp N4
+                &kp DOT     &kp N3   &kp N2   &kp N1   &kp N0
             >;
 
-            /* Encoder twist: scroll left / right (arrow keys) */
+            /* Encoder turn = left/right arrow */
             sensor-bindings = <&rot_kp LEFT RIGHT>;
         };
 
         /****************
-         * LAYER 1 — BLUETOOTH / RESET
-         * (kept from previous version so BT clear etc. still work)
+         * LAYER 1 — BLUETOOTH / UTILITY
+         *
+         * Top:   BT CLR   ___   ___   ___   BOOT
+         * Mid:           BT0   BT1   BT2
+         * Bottom: ___   ___   ___   ___   TOG BT
          ****************/
-        layer_bluetooth {
+        layer_bt {
             label = "BT";
-
-            /*
-             * Top row:
-             *   CLEAR   ____   ____   ____   BOOTLOADER
-             *
-             * Middle “row”:
-             *           BT_SEL0  BT_SEL1  BT_SEL2
-             *
-             * Bottom row:
-             *   ____    ____    ____    ____    TOG BT
-             */
 
             bindings = <
                 &bt BT_CLR    &none         &none          &none          &bootloader
-                              &bt BT_SEL 0  &bt BT_SEL 1   &bt BT_SEL 2
-                &none         &none         &none          &none          &tog BLUETOOTH
+                               &bt BT_SEL 0 &bt BT_SEL 1   &bt BT_SEL 2
+                &none          &none         &none          &none          &tog LAYER_BT
             >;
 
-            /* Same encoder behavior on this layer */
+            /* Keep encoder scroll the same on this layer */
             sensor-bindings = <&rot_kp LEFT RIGHT>;
         };
     };
 };
-
