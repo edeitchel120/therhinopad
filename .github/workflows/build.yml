@@ -2,8 +2,7 @@ name: Build ZMK Firmware
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -16,33 +15,24 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Install Python & West
         run: |
           sudo apt update
-          sudo apt install -y python3-pip cmake ninja-build g++ wget
+          sudo apt install -y python3-pip
           pip install west
 
-      - name: Initialize west (using official ZMK manifest)
+      - name: Initialize West workspace (use local manifest)
         run: |
-          west init -m https://github.com/zmkfirmware/zmk.git zmk-workspace
-          cd zmk-workspace
+          west init -l Firmware/zmk-config-rhinopad-main
           west update
 
-      - name: Copy your shield config into workspace
+      - name: Build firmware
         run: |
-          mkdir -p zmk-workspace/config
-          cp -r Firmware/zmk-config-rhinopad-main/* zmk-workspace/config/
-
-      - name: Build firmware (rhinopad.nice_nano_v2)
-        run: |
-          cd zmk-workspace
-          west build -s zmk/app -d build/rhinopad \
-            -DSHIELD=rhinopad \
-            -DBOARD=nice_nano_v2 \
-            -DZMK_CONFIG=../Firmware/zmk-config-rhinopad-main
+          cd Firmware/zmk-config-rhinopad-main
+          west build -s zmk/app -b nice_nano -- -DSHIELD=rhinopad
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: zmk-workspace/build/rhinopad/zephyr/zmk.uf2
+          path: build/zephyr/zmk.uf2
