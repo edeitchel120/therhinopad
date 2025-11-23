@@ -24,19 +24,19 @@ jobs:
 
       - name: Initialize West workspace
         run: |
-          west init -l ./Firmware/zmk-config-rhinopad-main
+          west init -m Firmware/zmk-config-rhinopad-maiwest.yml .
+
+      - name: Update West modules
+        run: |
           west update
-          west zephyr-export
 
       - name: Build firmware
         run: |
-          west build -s zmk/app -b nice_nano_v2 -- -DSHIELD=rhinopad
-          mkdir -p firmware-out
-          cp build/zephyr/zmk.uf2 firmware-out/rhinopad.uf2
+          cd zmk
+          west build -p -b nice_nano_v2 -- -DSHIELD=rhinopad -DZMK_CONFIG=../Firmware/zmk-config-rhinopad-main/config
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rhinopad_firmware
-          path: firmware-out
-
+          name: rhinopad-firmware
+          path: zmk/build/zephyr/zmk.uf2
