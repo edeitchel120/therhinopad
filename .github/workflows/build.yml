@@ -22,17 +22,22 @@ jobs:
           pip install west
 
       - name: Initialize West workspace (use local manifest)
+        working-directory: Firmware
         run: |
-          west init -l Firmware/zmk-config-rhinopad-main
+          west init -l zmk-config-rhinopad-main
           west update
+          west zephyr-export
 
       - name: Build firmware
+        working-directory: Firmware
         run: |
-          cd Firmware/zmk-config-rhinopad-main
-          west build -s zmk/app -b nice_nano -- -DSHIELD=rhinopad
+          west build -p=always -s zmk/app -b nice_nano_v2 -- \
+            -DSHIELD=rhinopad \
+            -DZMK_CONFIG=./zmk-config-rhinopad-main/config
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
-          path: build/zephyr/zmk.uf2
+          name: rhinopad-zmk.uf2
+          path: Firmware/build/zephyr/zmk.uf2
+
