@@ -14,28 +14,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: recursive
 
-      - name: Install Python & West
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip
+          sudo apt install -y python3-pip cmake ninja-build g++ wget
           pip install west
 
-      - name: Initialize West workspace
+      - name: Initialize west (using official ZMK manifest)
         run: |
-          # Use the LOCAL config repo folder as the manifest
-          west init -m Firmware/zmk-config-rhinopad-main .
+          west init -m https://github.com/zmkfirmware/zmk.git zmk-workspace
+          cd zmk-workspace
           west update
 
-      - name: Build firmware
+      - name: Copy your shield config into workspace
         run: |
-          west build -s zmk/app -b nice_nano_v2 -- \
+          mkdir -p zmk-workspace/config
+          cp -r Firmware/zmk-config-rhinopad-main/* zmk-workspace/config/
+
+      - name: Build firmware (rhinopad.nice_nano_v2)
+        run: |
+          cd zmk-workspace
+          west build -s zmk/app -d build/rhinopad \
             -DSHIELD=rhinopad \
-            -DZMK_CONFIG=Firmware/zmk-config-rhinopad-main/config
+            -DBOARD=nice_nano_v2 \
+            -DZMK_CONFIG=../Firmware/zmk-config-rhinopad-main
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rhinopad-nice_nano_v2
-          path: build/zephyr/zmk.uf2
+          name: firmware
+          path: zmk-workspace/build/rhinopad/zephyr/zmk.uf2
