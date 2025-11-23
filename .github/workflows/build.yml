@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
 
       - name: Install Python & West
         run: |
@@ -24,19 +24,18 @@ jobs:
 
       - name: Initialize West workspace
         run: |
-          west init -m Firmware/zmk-config-rhinopad-maiwest.yml .
-
-      - name: Update West modules
-        run: |
+          # Use the LOCAL config repo folder as the manifest
+          west init -m Firmware/zmk-config-rhinopad-main .
           west update
 
       - name: Build firmware
         run: |
-          cd zmk
-          west build -p -b nice_nano_v2 -- -DSHIELD=rhinopad -DZMK_CONFIG=../Firmware/zmk-config-rhinopad-main/config
+          west build -s zmk/app -b nice_nano_v2 -- \
+            -DSHIELD=rhinopad \
+            -DZMK_CONFIG=Firmware/zmk-config-rhinopad-main/config
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rhinopad-firmware
-          path: zmk/build/zephyr/zmk.uf2
+          name: rhinopad-nice_nano_v2
+          path: build/zephyr/zmk.uf2
